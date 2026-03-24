@@ -1,0 +1,882 @@
+basePath: /api/v1
+definitions:
+  domain.CurrencyType:
+    enum:
+    - fiat
+    - crypto
+    - metal
+    - commodity
+    - stock
+    type: string
+    x-enum-comments:
+      CurrencyTypeCommodity: Reserved for future
+      CurrencyTypeCrypto: BTC, ETH
+      CurrencyTypeFiat: USD, EUR, RUB, CNY
+      CurrencyTypeMetal: GOLD, SILVER
+      CurrencyTypeStock: Reserved for future
+    x-enum-descriptions:
+    - USD, EUR, RUB, CNY
+    - BTC, ETH
+    - GOLD, SILVER
+    - Reserved for future
+    - Reserved for future
+    x-enum-varnames:
+    - CurrencyTypeFiat
+    - CurrencyTypeCrypto
+    - CurrencyTypeMetal
+    - CurrencyTypeCommodity
+    - CurrencyTypeStock
+  domain.PortfolioSnapshot:
+    properties:
+      account_count:
+        type: integer
+      accounts:
+        description: Joined data
+        items:
+          $ref: '#/definitions/domain.PortfolioSnapshotAccount'
+        type: array
+      calculation_duration_ms:
+        type: integer
+      created_at:
+        type: integer
+      currency_count:
+        type: integer
+      id:
+        type: string
+      snapshot_date:
+        description: YYYY-MM-DD
+        type: string
+      snapshot_timestamp:
+        type: integer
+      total_balance_float:
+        type: number
+      total_balance_usd:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  domain.PortfolioSnapshotAccount:
+    properties:
+      account_id:
+        type: string
+      account_name:
+        type: string
+      account_type:
+        type: string
+      amount:
+        type: integer
+      amount_float:
+        type: number
+      converted_amount_float:
+        type: number
+      converted_amount_usd:
+        type: integer
+      created_at:
+        type: integer
+      currency_code:
+        type: string
+      currency_precision:
+        type: integer
+      id:
+        type: string
+      rate_source:
+        type: string
+      rate_timestamp:
+        type: integer
+      rate_to_usd:
+        type: number
+      snapshot_id:
+        type: string
+    type: object
+  domain.PortfolioTrend:
+    properties:
+      change_amount:
+        type: number
+      change_percent:
+        type: number
+      daily_growth_rate:
+        description: CAGR for the period
+        type: number
+      end_balance:
+        type: number
+      period:
+        description: '"7d", "30d", "1y"'
+        type: string
+      start_balance:
+        type: number
+    type: object
+  domain.ProviderPreference:
+    properties:
+      priority:
+        description: 1 = primary, 2 = fallback 1, etc.
+        type: integer
+      provider:
+        description: e.g., "coingecko"
+        type: string
+    type: object
+  domain.Settings:
+    properties:
+      created_at:
+        type: string
+      main_currency:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.AccountResponse:
+    properties:
+      amount:
+        type: integer
+      converted_amount:
+        type: integer
+      converted_float:
+        type: number
+      created_at:
+        type: string
+      currency:
+        type: string
+      description:
+        type: string
+      exchange_rate:
+        type: number
+      id:
+        type: string
+      main_currency:
+        description: Conversion to user's main currency
+        type: string
+      name:
+        type: string
+      precision:
+        type: integer
+      type:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.CreateAccountRequest:
+    properties:
+      amount:
+        type: integer
+      currency:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  dto.CreateCurrencyRequest:
+    properties:
+      base_unit:
+        type: string
+      code:
+        type: string
+      name:
+        type: string
+      precision:
+        type: integer
+      provider_prefs:
+        items:
+          $ref: '#/definitions/domain.ProviderPreference'
+        type: array
+      symbol:
+        type: string
+      type:
+        $ref: '#/definitions/domain.CurrencyType'
+    type: object
+  dto.CurrencyInfoResponse:
+    properties:
+      base_unit:
+        type: string
+      code:
+        type: string
+      created_at:
+        type: integer
+      fallback_providers:
+        items:
+          type: string
+        type: array
+      is_active:
+        type: boolean
+      name:
+        type: string
+      precision:
+        type: integer
+      primary_provider:
+        description: Computed
+        type: string
+      provider_prefs:
+        items:
+          $ref: '#/definitions/domain.ProviderPreference'
+        type: array
+      symbol:
+        type: string
+      type:
+        $ref: '#/definitions/domain.CurrencyType'
+      updated_at:
+        type: integer
+    type: object
+  dto.CurrencyResponse:
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+      precision:
+        type: integer
+    type: object
+  dto.ListAccountsResponse:
+    properties:
+      accounts:
+        items:
+          $ref: '#/definitions/dto.AccountResponse'
+        type: array
+    type: object
+  dto.ListCurrenciesResponse:
+    properties:
+      currencies:
+        items:
+          $ref: '#/definitions/dto.CurrencyResponse'
+        type: array
+    type: object
+  dto.UpdateAccountRequest:
+    properties:
+      amount:
+        type: integer
+      description:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  dto.UpdateCurrencyRequest:
+    properties:
+      base_unit:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      precision:
+        type: integer
+      symbol:
+        type: string
+    type: object
+  dto.UpdateProvidersRequest:
+    properties:
+      providers:
+        items:
+          $ref: '#/definitions/domain.ProviderPreference'
+        type: array
+    type: object
+  dto.UpdateSettingsRequest:
+    properties:
+      main_currency:
+        type: string
+    type: object
+  service.RateInfo:
+    properties:
+      from_currency:
+        type: string
+      rate:
+        type: number
+      source:
+        type: string
+      to_currency:
+        type: string
+    type: object
+  service.StatisticsResult:
+    properties:
+      accounts:
+        type: integer
+      rates_used:
+        items:
+          $ref: '#/definitions/service.RateInfo'
+        type: array
+      target_currency:
+        type: string
+      total_amount:
+        description: In smallest units
+        type: integer
+      total_float:
+        description: Human-readable
+        type: number
+      user_id:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@financetracker.local
+    name: API Support
+  description: Personal finance tracking API with multi-currency support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Finance Tracker API
+  version: "1.0"
+paths:
+  /accounts:
+    get:
+      description: Get all user accounts with converted amounts to main currency
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListAccountsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List all accounts
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Create a new financial account with specified currency and amount
+      parameters:
+      - description: Account data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new account
+      tags:
+      - accounts
+  /accounts/{id}:
+    delete:
+      description: Delete an account permanently
+      parameters:
+      - description: Account ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete account
+      tags:
+      - accounts
+    get:
+      description: Get a single account with converted amounts
+      parameters:
+      - description: Account ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get account by ID
+      tags:
+      - accounts
+    put:
+      consumes:
+      - application/json
+      description: Update account details (name, type, amount, description)
+      parameters:
+      - description: Account ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update account
+      tags:
+      - accounts
+  /admin/currencies:
+    get:
+      description: Get detailed list of all currencies including provider preferences
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.CurrencyInfoResponse'
+            type: array
+      summary: List all currencies (admin)
+      tags:
+      - admin
+    post:
+      consumes:
+      - application/json
+      description: Add a new currency to the system with provider preferences
+      parameters:
+      - description: Currency data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCurrencyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CurrencyInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create new currency
+      tags:
+      - admin
+  /admin/currencies/{code}:
+    delete:
+      description: Soft delete a currency (mark as inactive)
+      parameters:
+      - description: Currency code
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete currency
+      tags:
+      - admin
+    get:
+      description: Get detailed information about a specific currency
+      parameters:
+      - description: Currency code (e.g., BTC, USD)
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CurrencyInfoResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get currency details
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update currency properties (name, precision, symbol, etc.)
+      parameters:
+      - description: Currency code
+        in: path
+        name: code
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCurrencyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CurrencyInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update currency
+      tags:
+      - admin
+  /admin/currencies/{code}/providers:
+    put:
+      consumes:
+      - application/json
+      description: Set primary and fallback providers for a currency
+      parameters:
+      - description: Currency code
+        in: path
+        name: code
+        required: true
+        type: string
+      - description: Provider preferences
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProvidersRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CurrencyInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update currency provider preferences
+      tags:
+      - admin
+  /currencies:
+    get:
+      description: Get all supported currencies with their properties
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListCurrenciesResponse'
+      summary: List all currencies
+      tags:
+      - currencies
+  /portfolio:
+    get:
+      description: Get real-time total balance and breakdown across all accounts
+      parameters:
+      - description: 'Target currency for conversion (default: user''s main currency)'
+        in: query
+        name: currency
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.StatisticsResult'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get current portfolio statistics
+      tags:
+      - portfolio
+  /portfolio/history:
+    get:
+      description: Get daily portfolio snapshots for a date range
+      parameters:
+      - description: 'Start date (YYYY-MM-DD, default: 30 days ago)'
+        in: query
+        name: from
+        type: string
+      - description: 'End date (YYYY-MM-DD, default: today)'
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{from: string, to: string, count: int, data: []PortfolioSnapshot}'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get portfolio history
+      tags:
+      - portfolio
+  /portfolio/trend:
+    get:
+      description: Calculate growth metrics over a time period
+      parameters:
+      - description: 'Time period: 7d, 30d, 90d, 1y (default: 30d)'
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PortfolioTrend'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get portfolio trend
+      tags:
+      - portfolio
+  /rates/refresh:
+    post:
+      description: Trigger immediate fetch of exchange rates from all providers
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Refresh exchange rates
+      tags:
+      - rates
+  /settings:
+    get:
+      description: Get current user settings including main currency preference
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Settings'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user settings
+      tags:
+      - settings
+    put:
+      consumes:
+      - application/json
+      description: Update all user settings (full replacement)
+      parameters:
+      - description: Settings data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Settings'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update user settings
+      tags:
+      - settings
+  /snapshots:
+    get:
+      description: Get portfolio snapshots for a date range
+      parameters:
+      - description: 'Start date (YYYY-MM-DD, default: 30 days ago)'
+        in: query
+        name: from
+        type: string
+      - description: 'End date (YYYY-MM-DD, default: today)'
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{from: string, to: string, count: int, data: []PortfolioSnapshot}'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List portfolio snapshots
+      tags:
+      - snapshots
+    post:
+      description: Create a manual portfolio snapshot for a specific date
+      parameters:
+      - description: 'Date to create snapshot for (YYYY-MM-DD, default: today)'
+        in: query
+        name: date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.PortfolioSnapshot'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create portfolio snapshot
+      tags:
+      - snapshots
+  /snapshots/{date}:
+    get:
+      description: Get detailed portfolio state for a specific date
+      parameters:
+      - description: Date (YYYY-MM-DD)
+        in: path
+        name: date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PortfolioSnapshot'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get snapshot by date
+      tags:
+      - snapshots
+schemes:
+- http
+- https
+swagger: "2.0"
